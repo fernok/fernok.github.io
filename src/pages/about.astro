@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import Logo from '../components/Logo.astro';
+
+const stack = ['Astro', 'TypeScript', 'Bun', 'Node.js', 'Cloudflare Workers', 'CSS', 'MDX', 'Git'];
+const now = [
+  { k: 'Building', v: '这个站点，以及一套更轻的内容工作流。' },
+  { k: 'Maintaining', v: 'trendshift-lite —— 一个跑在 Cloudflare Workers 上的 GitHub Trending 看板。' },
+  { k: 'Learning', v: '把类型系统、构建工具和设计系统放在一起理解。' },
+  { k: 'Writing', v: '关于 Astro、Bun，以及那些「原来可以这么简单」的瞬间。' },
+];
+const timeline = [
+  { time: '2026.11', title: '重新开始写博客', text: '把零散的笔记搬进 Astro，用内容集合重新组织。' },
+  { time: '2026.11', title: '发布 trendshift-lite', text: '一个极简的 GitHub Trending 看板，部署在 Cloudflare Workers。' },
+  { time: '2026.11', title: '搭建这个站点', text: 'Astro 7 + Bun + GitHub Actions，评论交给 Giscus。' },
+];
+---
+<BaseLayout
+  title="关于"
+  description="关于编程小蕨 Fernok：独立开发者、写作者，喜欢把复杂的东西做简单。"
+>
+  <div class="container">
+    <div class="about-grid">
+      <aside class="profile-card">
+        <div class="profile-card__art">
+          <Logo class="brand__mark" title="Fernok" />
+        </div>
+        <div class="profile-card__body">
+          <div class="profile-card__name">编程小蕨</div>
+          <div class="profile-card__latin">Fernok / @fernok</div>
+          <p class="profile-card__bio">
+            独立开发者，写 Astro、TypeScript 和工具链。喜欢蕨类植物，也喜欢把复杂的东西做简单。
+          </p>
+          <div class="profile-card__status"><i></i> Available for interesting problems</div>
+          <div class="profile-card__links">
+            <a href="https://github.com/fernok" target="_blank" rel="noreferrer">GitHub <Icon name="arrow-up-right" size={12} /></a>
+            <a href="/rss.xml">RSS 订阅 <Icon name="arrow-up-right" size={12} /></a>
+            <a href="/projects">项目列表 <Icon name="arrow-up-right" size={12} /></a>
+          </div>
+        </div>
+      </aside>
+
+      <div class="about-intro">
+        <div class="eyebrow">About / 关于</div>
+        <h1>你好，我是<br /><span>编程小蕨</span>。</h1>
+        <p class="about-intro__lead">
+          一个把「做出来」看得比「说得漂亮」更重要的开发者。白天写代码，晚上写文档，偶尔在深夜重构一个其实已经能用的东西。
+        </p>
+        <p class="about-intro__lead">
+          我相信好的工具应该让人忘记工具本身。这个站点也是一样：内容先行，界面退后，但每一个细节都值得被认真对待。
+        </p>
+
+        <section class="about-section">
+          <div class="about-section__label">Now / 现在</div>
+          <ul class="now-list">
+            {now.map((item) => (
+              <li class="now-item">
+                <div class="now-item__k">{item.k}</div>
+                <div class="now-item__v">{item.v}</div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section class="about-section">
+          <div class="about-section__label">Path / 时间线</div>
+          <ol class="timeline">
+            {timeline.map((item) => (
+              <li>
+                <time>{item.time}</time>
+                <strong>{item.title}</strong>
+                <p>{item.text}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section class="about-section">
+          <div class="about-section__label">Stack / 常用工具</div>
+          <div class="stack-list">
+            {stack.map((item) => <span>{item}</span>)}
+          </div>
+        </section>
+
+        <section class="about-section">
+          <div class="about-section__label">Colophon / 关于这个站</div>
+          <div class="prose" style="font-size:14.5px">
+            <p>
+              站点使用 <a href="https://astro.build" target="_blank" rel="noreferrer">Astro 7</a>
+              构建，内容存放在 Markdown / MDX 中，包管理器与构建工具都是
+              <a href="https://bun.sh" target="_blank" rel="noreferrer">Bun</a>。评论由
+              <a href="https://giscus.app" target="_blank" rel="noreferrer">Giscus</a>
+              驱动，部署通过 GitHub Actions 自动完成。视觉参考了
+              <a href="https://build.nvidia.com/models" target="_blank" rel="noreferrer">NVIDIA Build</a>
+              的模型目录：深色、克制、让内容成为主角。
+            </p>
+            <p>
+              如果你想看它是怎么搭起来的，从
+              <a href="/docs">文档</a>开始，或者直接读
+              <a href="https://github.com/fernok/fernok.github.io" target="_blank" rel="noreferrer">源码</a>。
+            </p>
+          </div>
+        </section>
+
+        <div class="cta-panel" style="margin-top:44px;padding:30px">
+          <div>
+            <div class="eyebrow">Say hello</div>
+            <h2 style="font-size:clamp(24px,3vw,34px);margin-top:10px">一起做点<span>有意思</span>的事。</h2>
+          </div>
+          <div class="cta-panel__actions">
+            <a class="btn btn--primary btn--small" href="https://github.com/fernok" target="_blank" rel="noreferrer">
+              GitHub <Icon name="arrow-up-right" size={13} />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

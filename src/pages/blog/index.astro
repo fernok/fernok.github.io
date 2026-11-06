@@ -1,0 +1,45 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PostCard from '../../components/PostCard.astro';
+import { byDateDesc, tagCounts } from '../../lib/content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(byDateDesc);
+const tags = tagCounts(posts);
+const count = String(posts.length).padStart(2, '0');
+---
+<BaseLayout
+  title="博客"
+  description="编程小蕨 Fernok 的博客：Astro、Bun、TypeScript、内容系统与构建笔记。"
+>
+  <PageHeader
+    icon="terminal"
+    kicker="Journal / 2026"
+    title="Writing"
+    description="关于 Astro、Bun、内容系统和独立开发的笔记。有时是教程，有时是踩坑记录，偶尔只是想把一件事讲清楚。"
+    tabs={[
+      { label: '所有文章', href: '/blog', current: true },
+      { label: 'RSS 订阅', href: '/rss.xml', external: true },
+    ]}
+  />
+
+  <div class="container" data-filter-scope>
+    <div class="catalog-bar" data-filter-group>
+      <div class="chips" role="group" aria-label="按标签筛选文章">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">全部</button>
+        {tags.map(([tag, amount]) => (
+          <button class="chip" type="button" data-filter={tag} aria-pressed="false">
+            {tag}<span class="chip__count">{amount}</span>
+          </button>
+        ))}
+      </div>
+      <div class="catalog-count" data-filter-count data-unit="POSTS">{count} POSTS</div>
+    </div>
+
+    <div class="post-grid">
+      {posts.map((post, index) => <PostCard post={post} index={index} featured={index === 0} />)}
+    </div>
+    <div class="catalog-empty" data-filter-empty hidden>没有匹配的文章，换一个标签试试。</div>
+  </div>
+</BaseLayout>

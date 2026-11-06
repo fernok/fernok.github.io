@@ -1,0 +1,112 @@
+---
+title: Giscus 评论
+description: 开启 Discussions、获取 ID、配置环境变量，并让评论在 GitHub Actions 构建时生效。
+section: 指南
+order: 3
+updatedDate: 2026-11-06
+tags: [Giscus, 评论]
+---
+
+import Callout from '../../components/Callout.astro';
+import Steps from '../../components/Steps.astro';
+import Step from '../../components/Step.astro';
+
+评论由 [Giscus](https://giscus.app) 提供。它把评论存进当前仓库的 GitHub Discussions，不需要数据库，也不需要单独的后端。
+
+站点已经在 `src/components/Giscus.astro` 中接好了组件，你只需要补齐仓库配置。
+
+## 一次性准备
+
+<Steps>
+  <Step>
+    **开启 Discussions。** 进入仓库 `Settings → General → Features`，勾选 `Discussions`。
+  </Step>
+  <Step>
+    **安装 Giscus App。** 打开 [github.com/apps/giscus](https://github.com/apps/giscus)，选择 `fernok/fernok.github.io` 安装。没有这一步，评论区无法创建讨论。
+  </Step>
+  <Step>
+    **创建分类。** 在 Discussions 里新建一个 `Comments` 分类（推荐 `Announcements` 类型，只有维护者能新建讨论），也可以直接使用默认的 `General`。
+  </Step>
+  <Step>
+    **复制 ID。** 打开 [giscus.app](https://giscus.app)，填入仓库名和分类，页面底部会生成 `data-repo-id` 和 `data-category-id`。
+  </Step>
+</Steps>
+
+## 当前配置
+
+站点的默认值写在 `src/config.ts`：
+
+```ts
+export const GISCUS = {
+  enabled: true,
+  repo: 'fernok/fernok.github.io',
+  repoId: 'R_kgDOVg_Rnw',
+  category: 'General',
+  categoryId: 'DIC_kwDOVg_Rn84DKfTv',
+  mapping: 'pathname',
+  strict: '0',
+  reactionsEnabled: '1',
+  inputPosition: 'top',
+  theme: 'dark',
+  lang: 'zh-CN',
+};
+```
+
+也可以用环境变量覆盖，不需要改代码：
+
+```bash
+PUBLIC_GISCUS_REPO=fernok/fernok.github.io
+PUBLIC_GISCUS_REPO_ID=R_kgDO...
+PUBLIC_GISCUS_CATEGORY=General
+PUBLIC_GISCUS_CATEGORY_ID=DIC_kwDO...
+PUBLIC_GISCUS_THEME=dark
+```
+
+<Callout type="info" title="PUBLIC_ 前缀">
+  Astro 只会把 `PUBLIC_` 开头的变量暴露给客户端。这几个值本身不是密钥，但仍建议通过环境变量或仓库 Variables 管理，方便以后换仓库。
+</Callout>
+
+## 在 Actions 中注入
+
+如果使用仓库 Variables，在 workflow 的构建步骤里加上：
+
+```yaml
+- name: Build
+  run: bun run build
+  env:
+    PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID }}
+    PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.PUBLIC_GISCUS_CATEGORY_ID }}
+```
+
+然后在 GitHub 仓库的 `Settings → Secrets and variables → Actions → Variables` 添加对应的值。
+
+## 映射方式
+
+| mapping | 行为 | 适合 |
+| --- | --- | --- |
+| `pathname` | 以页面路径作为讨论标题 | 大多数博客（当前选择） |
+| `url` | 使用完整 URL | 多域名站点 |
+| `title` | 使用页面标题 | 标题稳定的文档 |
+| `og:title` | 使用 OG 标题 | 需要与分享标题一致 |
+| `specific` | 手动指定 term | 精细控制 |
+
+使用 `pathname` 时，**不要随意修改文章 URL**，否则旧评论会找不到对应讨论。
+
+## 审核与通知
+
+评论就是 Discussion，可以直接用 GitHub 的通知和审核工具：
+
+- 在仓库 `Settings → Moderation` 设置敏感词和屏蔽用户；
+- 在 `Discussions` 里锁定、转移或删除讨论；
+- 需要审核时，把分类设置为 `Announcements` 类型，只有维护者能发新讨论，其他人通过评论参与。
+
+## 排障
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| 评论区空白 | 脚本被广告拦截器屏蔽 | 关闭拦截器或换网络测试 |
+| 提示未安装 | Giscus App 未授权仓库 | 重新安装并选择该仓库 |
+| 无法创建讨论 | Discussions 未开启或分类 ID 错误 | 检查仓库设置与 `categoryId` |
+| 评论不显示 | mapping 变了或 URL 改了 | 用旧路径测试，或迁移讨论标题 |
+
+组件只在滚动到评论区附近时才加载 Giscus，所以首屏不会因为第三方脚本变慢。加载逻辑在 `src/components/Giscus.astro`。

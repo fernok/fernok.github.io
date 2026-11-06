@@ -1,0 +1,113 @@
+---
+title: Astro 内容集合：让写作回到写作
+description: 从 frontmatter 校验到动态路由，用 Astro 7 的内容集合搭一个不容易写坏的博客。
+pubDate: 2026-11-02
+tags: [Astro, 工程]
+series: Astro 笔记
+---
+
+import Callout from '../../components/Callout.astro';
+
+我以前对「内容集合」这个词没什么感觉。直到某次改 frontmatter，把 `pubDate` 写成了 `publishDate`，构建成功、页面空白，上线后才发现。
+
+Astro 的内容集合解决的就是这类问题：**在构建时就知道你的内容结构对不对**。
+
+## 定义集合
+
+在 Astro 7 里，集合定义放在 `src/content.config.ts`。用 `glob` loader 指定文件范围，用 Zod 描述 frontmatter。
+
+```ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
+
+export const blog = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+```
+
+几个容易踩的点：
+
+- `z.coerce.date()` 会把 `2026-11-06` 这样的字符串转成 `Date`，排序时不用再手动解析。
+- `pattern` 可以同时匹配 `.md` 和 `.mdx`，两种格式可以混用。
+- Astro 7 推荐从 `astro/zod` 导入 `z`，而不是从 `astro:content`。
+
+## 读取与渲染
+
+列表页直接调用 `getCollection`：
+
+```ts
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+```
+
+详情页需要先拿到路径，再渲染内容。动态路由的写法是这样的：
+
+```astro
+---
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+---
+
+<article class="prose">
+  <Content />
+</article>
+```
+
+`headings` 是渲染时顺带生成的大纲，可以直接拿来做目录，不需要再解析一遍 HTML。
+
+<Callout type="warn" title="slug 不是文件名">
+  内容集合里的 `id` 是相对于 `base` 的路径（去掉扩展名），不是原始文件名。嵌套目录会得到 `notes/hello` 这样的 id，路由参数要匹配得上。
+</Callout>
+
+## 给内容加类型
+
+类型来自 schema。`CollectionEntry<'blog'>` 会推导出 `data` 的完整结构，编辑器里能直接补全。
+
+```ts
+import type { CollectionEntry } from 'astro:content';
+
+type BlogPost = CollectionEntry<'blog'>;
+
+function readingTime(post: BlogPost) {
+  return Math.ceil((post.body?.length ?? 0) / 380);
+}
+```
+
+这看起来只是类型体操，但实际收益很直接：重命名字段时，所有使用处都会报错，而不是某个页面悄悄变成 `undefined`。
+
+## MDX 的边界
+
+MDX 很适合做少量交互组件，比如提示框、步骤条。但我不建议把整篇文章写成 React 组件树——那会失去 Markdown 的可读性，也让内容更难迁移。
+
+我的原则是：
+
+1. 能用 Markdown 表达的，用 Markdown；
+2. 需要重复出现的结构，才抽成组件；
+3. 组件只负责展示，不在文章里写业务逻辑。
+
+## 最后
+
+内容集合不是银弹，但它把「内容」从一个普通的字符串数组，变成了有结构、有类型、可校验的数据。对于要长期维护的站点，这个投资非常值。
+
+下一篇会写这个站点怎么用 Bun + GitHub Actions 自动部署。如果你等不及，可以直接看 [部署文档](/docs/deploy)。

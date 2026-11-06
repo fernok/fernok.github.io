@@ -1,0 +1,110 @@
+---
+title: 把工具箱换成 Bun 之后
+description: 安装、脚本、测试、构建——一次不激进的 Bun 迁移记录。
+pubDate: 2026-10-28
+tags: [Bun, 工具链]
+series: 工具链
+---
+
+import Callout from '../../components/Callout.astro';
+import Steps from '../../components/Steps.astro';
+import Step from '../../components/Step.astro';
+
+我对工具链迁移一直很保守。能跑的东西不应该为了「新」而重装一遍。所以当 Bun 已经发布很久之后，我仍然在用 npm + tsx + nodemon 的组合。
+
+直到有一次，一个前端项目 `npm install` 花了四分钟，而我只是想改一行文案。
+
+## 先换掉的不是运行时
+
+Bun 最没有争议的部分是包管理器。它不需要你改任何代码：
+
+```bash
+bun install
+bun add -d typescript
+bun remove lodash
+```
+
+`bun.lock` 是文本格式，合并冲突比二进制 lockfile 好处理。安装速度的提升在 CI 里尤其明显——缓存命中时，往往几秒就结束了。
+
+<Callout type="note" title="兼容性">
+  Bun 仍然读取 `package.json`，大多数 npm 包可以正常工作。真正需要留意的是依赖原生模块、postinstall 脚本或特定 Node API 的包。
+</Callout>
+
+## 脚本可以少一层
+
+以前我会装 `npm-run-all`、`concurrently` 这类工具。Bun 自带脚本运行器，可以直接写：
+
+```json
+{
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "check": "astro check",
+    "preview": "astro preview"
+  }
+}
+```
+
+需要并行时，Bun 也支持 shell 语法：
+
+```bash
+bun run dev & bun run --watch scripts/og.ts & wait
+```
+
+不过对于这个站点，我刻意没有加太多脚本。构建就一条 `bun run build`，越少越好。
+
+## 测试与一次性脚本
+
+Bun 内置测试运行器，API 和 Jest 很像：
+
+```ts
+import { describe, expect, test } from 'bun:test';
+import { readingTime } from '../src/lib/content';
+
+describe('readingTime', () => {
+  test('returns at least one minute', () => {
+    expect(readingTime('')).toBe(1);
+    expect(readingTime('hello')).toBe(1);
+  });
+});
+```
+
+对于「读一个 JSON、生成一个文件」这类一次性任务，`bun script.ts` 直接运行 TypeScript，不需要 `ts-node`。这个体验一旦习惯，就很难回去。
+
+## 在 CI 里用 Bun
+
+GitHub Actions 官方有 `oven-sh/setup-bun`。一个最小的部署流程：
+
+```yaml
+- uses: oven-sh/setup-bun@v2
+  with:
+    bun-version: 1.4.4
+- run: bun install --frozen-lockfile
+- run: bun run build
+```
+
+`--frozen-lockfile` 很重要。它保证 CI 使用的是提交过的 lockfile，而不是在服务器上悄悄升级依赖。
+
+## 哪些地方我仍然用 Node
+
+- 需要特定原生模块的脚本；
+- 依赖 Node 调试协议的工具；
+- 已经稳定运行、没有明显痛点的旧项目。
+
+Bun 不是宗教。它是一个更快的工具，适合新项目，也适合那些安装时间已经影响到心情的项目。
+
+## 迁移清单
+
+<Steps>
+  <Step>
+    **先换包管理器。** 保留 Node 运行时，只把 `npm install` 换成 `bun install`，观察一周。
+  </Step>
+  <Step>
+    **再换脚本。** 把 `ts-node`、`nodemon` 之类的包装去掉，直接用 `bun run`。
+  </Step>
+  <Step>
+    **最后换 CI。** 固定 Bun 版本，使用 frozen lockfile，确认构建产物一致。
+  </Step>
+</Steps>
+
+现在这个站点从安装到构建大约十几秒。省下来的时间没有让我变得更高效，但至少让我更愿意打开终端。

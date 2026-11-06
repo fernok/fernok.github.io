@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0c0c0c"/>
+  <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#2a2a2a"/>
+  <g transform="translate(12 12)" fill="none">
+    <path d="M20 37V7.5" stroke="#76b900" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M20 31.5c-5.4.1-9.7-2.4-12-6.4 5.2-.1 9.5 2.2 12 6.4Z" fill="#76b900" opacity=".92"/>
+    <path d="M20 31.5c5.4.1 9.7-2.4 12-6.4-5.2-.1-9.5 2.2-12 6.4Z" fill="#76b900" opacity=".55"/>
+    <path d="M20 25.2c-4.5.1-8-1.9-10-5.2 4.3-.1 7.8 1.8 10 5.2Z" fill="#76b900" opacity=".82"/>
+    <path d="M20 25.2c4.5.1 8-1.9 10-5.2-4.3-.1-7.8 1.8-10 5.2Z" fill="#76b900" opacity=".42"/>
+    <path d="M20 19.1c-3.5.1-6.2-1.4-7.8-4 3.3-.1 6 1.4 7.8 4Z" fill="#76b900" opacity=".7"/>
+    <path d="M20 19.1c3.5.1 6.2-1.4 7.8-4-3.3-.1-6 1.4-7.8 4Z" fill="#76b900" opacity=".32"/>
+    <path d="M20 13.2c-2.3.1-4.1-.9-5.1-2.7 2.2-.1 4 .9 5.1 2.7Z" fill="#76b900" opacity=".55"/>
+    <path d="M20 13.2c2.3.1 4.1-.9 5.1-2.7-2.2-.1-4 .9-5.1 2.7Z" fill="#76b900" opacity=".22"/>
+    <path d="M20 7.5c-1.2-1.4-1.4-3.2-.3-4.8 1.7.7 2.5 2.4 2 4.2" stroke="#76b900" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,138 @@
+---
+title: 写作与内容
+description: Frontmatter 字段、MDX 组件、草稿与文件命名约定。
+section: 指南
+order: 2
+updatedDate: 2026-11-05
+tags: [Markdown, MDX]
+---
+
+import Callout from '../../components/Callout.astro';
+import Steps from '../../components/Steps.astro';
+import Step from '../../components/Step.astro';
+
+所有内容都在 `src/content` 下，按集合分目录。文件路径决定 URL，frontmatter 决定元数据。
+
+## 博客 frontmatter
+
+```yaml
+---
+title: 文章标题
+description: 用于列表、SEO 和分享卡片的一句话摘要
+pubDate: 2026-11-06
+updatedDate: 2026-11-07        # 可选
+tags: [Astro, 工程]             # 可选，默认 []
+series: Astro 笔记              # 可选
+featured: false                 # 可选，是否在列表里突出显示
+draft: false                    # 可选，true 时不会出现在任何页面
+---
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `title` | string | 是 | 页面标题与文章标题 |
+| `description` | string | 是 | 摘要，建议 40–80 字 |
+| `pubDate` | date | 是 | 发布时间，支持 `2026-11-06` |
+| `updatedDate` | date | 否 | 最近更新时间 |
+| `tags` | string[] | 否 | 用于筛选和检索 |
+| `series` | string | 否 | 系列名，显示在面包屑里 |
+| `featured` | boolean | 否 | 是否突出显示 |
+| `draft` | boolean | 否 | 草稿不会进入构建 |
+
+## 文档 frontmatter
+
+```yaml
+---
+title: 快速开始
+description: 这篇文章解决什么问题
+section: 开始          # 侧边栏分组
+order: 1               # 全站排序，越小越靠前
+updatedDate: 2026-11-06
+tags: [安装]
+---
+```
+
+文档的 `section` 会决定侧边栏分组，`order` 决定组内顺序。新增分组不需要改代码，第一次出现时会自动创建。
+
+## 项目 frontmatter
+
+```yaml
+---
+title: trendshift-lite
+tagline: 一个跑在 Workers 上的 GitHub Trending 看板
+description: 用于项目卡片和详情的完整描述
+status: shipped        # shipped | building | concept
+year: "2026"
+stack: [JavaScript, Cloudflare Workers]
+repo: https://github.com/fernok/trendshift-lite
+demo: https://example.com
+featured: true
+order: 1
+accent: blue           # green | blue | purple | amber
+---
+```
+
+<Callout type="warn" title="文件名就是 URL">
+  `src/content/blog/hello-fernok.mdx` 会生成 `/blog/hello-fernok`。发布后尽量不要改文件名；如果必须改，请加一条重定向。
+</Callout>
+
+## 使用 MDX 组件
+
+需要提示框或步骤条时，把文件后缀改成 `.mdx`，并在顶部导入组件：
+
+```mdx
+import Callout from '../../components/Callout.astro';
+import Steps from '../../components/Steps.astro';
+import Step from '../../components/Step.astro';
+
+<Callout type="info" title="提示">
+  这是一段提示。
+</Callout>
+
+<Steps>
+  <Step>
+    **第一步。** 先做这个。
+  </Step>
+  <Step>
+    **第二步。** 再做那个。
+  </Step>
+</Steps>
+```
+
+可用的 Callout 类型：`note`、`info`、`warn`、`danger`。
+
+## 代码块
+
+Astro 在构建时用 Shiki 高亮代码。写围栏代码块即可，不需要额外插件：
+
+````md
+```ts
+const answer = 42;
+```
+````
+
+站点会自动给文章里的代码块添加「复制」按钮。行内代码用反引号，样式会自动处理。
+
+## 图片与静态资源
+
+把图片放进 `public/`，然后用绝对路径引用：
+
+```mdx
+![截图](/images/dashboard.png)
+```
+
+如果需要 Astro 的图片优化（自动压缩、生成多尺寸），把图片放到 `src/assets/`，并使用 `astro:assets` 的 `<Image />` 组件。当前站点以文字为主，暂时没有使用图片管线。
+
+## 草稿与发布
+
+- `draft: true` 的文件不会出现在列表、RSS、搜索和构建产物中；
+- 发布前把 `draft` 改为 `false`，或删除该字段；
+- `updatedDate` 只会影响显示，不影响排序。
+
+## 写作建议
+
+1. 标题说清楚「这篇解决什么问题」；
+2. 开头三句话内给出结论；
+3. 代码示例尽量可运行；
+4. 长文用小标题和列表切开；
+5. 发布前用手机看一遍。

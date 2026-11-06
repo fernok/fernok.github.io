@@ -1,0 +1,101 @@
+---
+import { GISCUS } from '../config';
+
+interface Props {
+  title?: string;
+}
+
+const { title = '讨论' } = Astro.props;
+const configured = Boolean(GISCUS.enabled && GISCUS.repoId && GISCUS.categoryId);
+---
+<section class="comments" id="comments" aria-labelledby="comments-title">
+  <div class="comments__head">
+    <h2 class="comments__title" id="comments-title">{title}</h2>
+    <div class="comments__meta">
+      <span class="comments__note">Giscus / GitHub Discussions</span>
+      <a class="comments__note comments__link" href={`${import.meta.env.PUBLIC_GITHUB_REPO ?? 'https://github.com/fernok/fernok.github.io'}/discussions`} target="_blank" rel="noreferrer">打开 Discussions ↗</a>
+    </div>
+  </div>
+
+  {configured ? (
+    <>
+      <div class="comments__mount" data-giscus></div>
+      <script
+        is:inline
+        define:vars={{
+          repo: GISCUS.repo,
+          repoId: GISCUS.repoId,
+          category: GISCUS.category,
+          categoryId: GISCUS.categoryId,
+          mapping: GISCUS.mapping,
+          strict: GISCUS.strict,
+          reactionsEnabled: GISCUS.reactionsEnabled,
+          emitMetadata: GISCUS.emitMetadata,
+          inputPosition: GISCUS.inputPosition,
+          theme: GISCUS.theme,
+          lang: GISCUS.lang,
+        }}
+      >
+        (() => {
+          const mount = document.querySelector('[data-giscus]');
+          if (!mount) return;
+
+          const load = () => {
+            if (mount.dataset.loaded) return;
+            mount.dataset.loaded = 'true';
+
+            const script = document.createElement('script');
+            script.src = 'https://giscus.app/client.js';
+            script.async = true;
+            script.crossOrigin = 'anonymous';
+
+            const attrs = {
+              'data-repo': repo,
+              'data-repo-id': repoId,
+              'data-category': category,
+              'data-category-id': categoryId,
+              'data-mapping': mapping,
+              'data-strict': strict,
+              'data-reactions-enabled': reactionsEnabled,
+              'data-emit-metadata': emitMetadata,
+              'data-input-position': inputPosition,
+              'data-theme': theme,
+              'data-lang': lang,
+              'data-loading': 'lazy',
+            };
+
+            for (const [key, value] of Object.entries(attrs)) {
+              script.setAttribute(key, value);
+            }
+
+            mount.appendChild(script);
+          };
+
+          if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(
+              (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                  observer.disconnect();
+                  load();
+                }
+              },
+              { rootMargin: '500px 0px' },
+            );
+            observer.observe(mount);
+          } else {
+            load();
+          }
+        })();
+      </script>
+    </>
+  ) : (
+    <div class="comments-setup">
+      <div class="comments-setup__title">评论区尚未连接</div>
+      <p>
+        在仓库的 <code>src/config.ts</code> 中填入 Giscus 的
+        <code>repoId</code> 与 <code>categoryId</code>，或在构建环境中设置
+        <code>PUBLIC_GISCUS_REPO_ID</code> 与 <code>PUBLIC_GISCUS_CATEGORY_ID</code>。
+      </p>
+    </div>
+  )}
+</section>

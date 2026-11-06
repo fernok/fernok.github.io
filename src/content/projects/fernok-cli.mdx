@@ -1,0 +1,60 @@
+---
+title: fernok-cli
+tagline: 把内容工作流收进终端
+description: 一个构思中的命令行工具：新建文章、检查 frontmatter、生成摘要和社交分享图。
+status: concept
+year: "2026"
+stack: [Bun, TypeScript]
+featured: false
+order: 3
+accent: purple
+---
+
+import Callout from '../../components/Callout.astro';
+
+这是一个还在构思阶段的工具，还没有公开仓库。
+
+## 问题
+
+写一篇新文章需要做这些事：
+
+1. 想文件名；
+2. 复制 frontmatter 模板；
+3. 填日期、标签、描述；
+4. 生成分享图；
+5. 本地预览；
+6. 提交并推送。
+
+这些步骤都不难，但重复次数多了就会烦。fernok-cli 想把这些动作收进一个命令。
+
+## 设想的命令
+
+```bash
+# 新建文章，交互式填写 frontmatter
+fernok new "用 Astro 做内容站点"
+
+# 检查所有内容的 frontmatter 与链接
+fernok check
+
+# 生成分享图
+fernok og --all
+
+# 本地预览并打开浏览器
+fernok dev
+```
+
+## 设计原则
+
+- **只做这个站点需要的事。** 不做通用静态站点生成器。
+- **可组合。** 每个子命令都能单独运行，也能被 shell 脚本调用。
+- **不隐藏 Git。** 提交仍然由人决定，工具只负责准备内容。
+
+<Callout type="warn" title="还没开始">
+  这个项目目前只有想法和零散的脚本。等我把手头的站点和 trendshift-lite 稳定下来，再决定是否真的动手。
+</Callout>
+
+## 为什么公开想法
+
+把还没做的东西写出来，是一种承诺，也是一种过滤器。如果三个月后它仍然只是想法，那说明它可能没那么重要——这也没关系。
+
+如果你也在维护内容站点，欢迎告诉我你最想自动化的一步。

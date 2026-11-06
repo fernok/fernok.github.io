@@ -1,0 +1,73 @@
+---
+import { NAV, SITE } from '../config';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label={`${SITE.title} 首页`}>
+      <Logo class="brand__mark" />
+      <span class="brand__text">
+        <span class="brand__word">FERNOK</span>
+        <span class="brand__cn">编程小蕨</span>
+      </span>
+    </a>
+
+    <nav class="site-nav" aria-label="主导航">
+      {NAV.map((item) => (
+        <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+      ))}
+    </nav>
+
+    <div class="header-actions">
+      <button class="search-trigger" type="button" data-search-open aria-haspopup="dialog" aria-controls="site-search">
+        <Icon name="search" size={14} />
+        <span>搜索</span>
+        <kbd data-search-kbd>⌘K</kbd>
+      </button>
+
+      <a class="icon-button" href={SITE.github} target="_blank" rel="noreferrer" aria-label="GitHub @fernok">
+        <Icon name="github" size={16} />
+      </a>
+
+      <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="打开菜单">
+        <Icon name="menu" size={17} />
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-nav" id="mobile-nav" hidden>
+  <div class="mobile-nav__label">Navigation / 导航</div>
+  <nav aria-label="移动端导航">
+    {NAV.map((item, index) => (
+      <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+        {item.label}
+        <span>0{index + 1}</span>
+      </a>
+    ))}
+  </nav>
+  <button class="btn btn--ghost" type="button" data-search-open style="margin-top:28px;width:100%">
+    <Icon name="search" size={15} /> 搜索站点
+  </button>
+  <a class="btn btn--primary" href={SITE.github} target="_blank" rel="noreferrer" style="margin-top:10px;width:100%">
+    <Icon name="github" size={15} /> GitHub @fernok
+  </a>
+</div>
+
+<dialog class="search-dialog" id="site-search" aria-labelledby="search-title">
+  <h2 class="sr-only" id="search-title">搜索站点</h2>
+  <div class="search-box">
+    <Icon name="search" size={18} />
+    <input id="search-input" type="search" placeholder="搜索文章、文档、项目…" autocomplete="off" spellcheck="false" />
+    <button class="search-close" type="button" data-search-close>ESC</button>
+  </div>
+  <div class="search-results" id="search-results" role="listbox" aria-label="搜索结果" aria-live="polite"></div>
+  <div class="search-foot">
+    <span><kbd>↑</kbd><kbd>↓</kbd> 选择</span>
+    <span><kbd>↵</kbd> 打开 · <kbd>ESC</kbd> 关闭</span>
+  </div>
+</dialog>

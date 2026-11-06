@@ -1,0 +1,51 @@
+---
+import Icon from './Icon.astro';
+
+interface Tab {
+  label: string;
+  href: string;
+  current?: boolean;
+  external?: boolean;
+}
+
+interface Props {
+  icon?: string;
+  kicker?: string;
+  title: string;
+  titleHtml?: string;
+  description?: string;
+  tabs?: Tab[];
+}
+
+const { icon = 'terminal', kicker, title, titleHtml, description, tabs = [] } = Astro.props;
+---
+<header class="page-head">
+  <div class="container">
+    <div class="page-head__inner">
+      <div class="page-icon" aria-hidden="true">
+        <Icon name={icon} size={38} strokeWidth={1.4} />
+      </div>
+      <div>
+        {kicker && <div class="page-kicker">{kicker}</div>}
+        {titleHtml ? <h1 class="page-title" set:html={titleHtml} /> : <h1 class="page-title">{title}</h1>}
+        {description && <p class="page-desc">{description}</p>}
+        <slot />
+      </div>
+    </div>
+    {tabs.length > 0 && (
+      <nav class="page-tabs" aria-label="页面分区">
+        {tabs.map((tab) => (
+          <a
+            class="page-tab"
+            href={tab.href}
+            aria-current={tab.current ? 'page' : undefined}
+            target={tab.external ? '_blank' : undefined}
+            rel={tab.external ? 'noreferrer' : undefined}
+          >
+            {tab.label}
+          </a>
+        ))}
+      </nav>
+    )}
+  </div>
+</header>

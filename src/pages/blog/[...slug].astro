@@ -1,0 +1,134 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Toc from '../../components/Toc.astro';
+import Giscus from '../../components/Giscus.astro';
+import Badge from '../../components/Badge.astro';
+import Icon from '../../components/Icon.astro';
+import { SITE } from '../../config';
+import { byDateDesc, formatDate, isoDate, postHref, readingTime } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const allPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort(byDateDesc);
+const index = allPosts.findIndex((item) => item.id === post.id);
+const newer = index > 0 ? allPosts[index - 1] : undefined;
+const older = index >= 0 && index < allPosts.length - 1 ? allPosts[index + 1] : undefined;
+const minutes = readingTime(post.body);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+  author: { '@type': 'Person', name: SITE.name, url: SITE.github },
+  publisher: { '@type': 'Person', name: SITE.name, url: SITE.url },
+  mainEntityOfPage: new URL(postHref(post.id), SITE.url).href,
+  image: new URL('/og.png', SITE.url).href,
+  inLanguage: 'zh-CN',
+  keywords: post.data.tags.join(', '),
+};
+---
+<BaseLayout title={post.data.title} description={post.data.description} type="article" schema={schema}>
+  <header class="article-head">
+    <div class="container">
+      <div class="article-head__inner">
+        <nav class="breadcrumb" aria-label="面包屑">
+          <a href="/">首页</a>
+          <span class="breadcrumb__sep">/</span>
+          <a href="/blog">博客</a>
+          <span class="breadcrumb__sep">/</span>
+          <span>{post.data.series ?? '文章'}</span>
+        </nav>
+
+        <div class="badges" style="margin-bottom:18px">
+          {post.data.tags.map((tag) => <Badge tone="green">{tag}</Badge>)}
+        </div>
+
+        <h1 class="article-title">{post.data.title}</h1>
+        <p class="article-deck">{post.data.description}</p>
+
+        <div class="article-meta">
+          <span class="article-meta__item">
+            <Icon name="user" size={13} />
+            <span class="article-meta__author">{SITE.name}</span>
+          </span>
+          <span class="article-meta__item">
+            <Icon name="calendar" size={13} />
+            <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate, 'long')}</time>
+          </span>
+          <span class="article-meta__item">
+            <Icon name="clock" size={13} />
+            {minutes} 分钟阅读
+          </span>
+          {post.data.updatedDate && (
+            <span class="article-meta__item">
+              <Icon name="file" size={13} />
+              更新于 {formatDate(post.data.updatedDate)}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="article-layout">
+      <div class="article-body">
+        <article class="prose">
+          <Content />
+        </article>
+
+        <div class="article-foot">
+          <div class="article-tags">
+            {post.data.tags.map((tag) => <Badge>{tag}</Badge>)}
+          </div>
+          <div class="article-share">
+            <button class="btn btn--ghost btn--small" type="button" data-copy-link data-label="复制链接">
+              复制链接
+            </button>
+            <a class="btn btn--ghost btn--small" href="https://github.com/fernok/fernok.github.io/tree/main/src/content/blog" target="_blank" rel="noreferrer">
+              查看源码 <Icon name="arrow-up-right" size={13} />
+            </a>
+          </div>
+        </div>
+
+        <nav class="article-nav" aria-label="文章导航">
+          {newer ? (
+            <a class="article-nav__item" href={postHref(newer.id)}>
+              <span class="article-nav__label">← 上一篇</span>
+              <span class="article-nav__title">{newer.data.title}</span>
+            </a>
+          ) : (
+            <a class="article-nav__item" href="/blog">
+              <span class="article-nav__label">← 回到博客</span>
+              <span class="article-nav__title">浏览全部文章</span>
+            </a>
+          )}
+          {older ? (
+            <a class="article-nav__item article-nav__item--next" href={postHref(older.id)}>
+              <span class="article-nav__label">下一篇 →</span>
+              <span class="article-nav__title">{older.data.title}</span>
+            </a>
+          ) : (
+            <a class="article-nav__item article-nav__item--next" href="/rss.xml">
+              <span class="article-nav__label">下一篇 →</span>
+              <span class="article-nav__title">通过 RSS 订阅新文章</span>
+            </a>
+          )}
+        </nav>
+
+        <Giscus title="讨论" />
+      </div>
+
+      <Toc headings={headings} />
+    </div>
+  </div>
+</BaseLayout>

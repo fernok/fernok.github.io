@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+<BaseLayout title="404" description="这一页还没长出来。" noIndex>
+  <div class="container notfound">
+    <div>
+      <div class="notfound__code">404</div>
+      <h1>这一页还没长出来。</h1>
+      <p>可能是链接写错了，也可能是内容还在土里。</p>
+      <div class="notfound__actions">
+        <a class="btn btn--primary" href="/">回到首页 <Icon name="arrow-right" size={14} /></a>
+        <a class="btn btn--ghost" href="/blog">去博客看看</a>
+        <a class="btn btn--ghost" href="/docs">打开文档</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

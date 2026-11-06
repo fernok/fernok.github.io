@@ -1,0 +1,139 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Giscus from '../../components/Giscus.astro';
+import Badge from '../../components/Badge.astro';
+import Icon from '../../components/Icon.astro';
+import { SITE, STATUS_LABELS, STATUS_TONES } from '../../config';
+import { projectHref } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', ({ data }) => !data.draft);
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const allProjects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order,
+);
+const index = allProjects.findIndex((item) => item.id === project.id);
+const next = allProjects[(index + 1) % allProjects.length];
+const no = String(index + 1).padStart(2, '0');
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareSourceCode',
+  name: project.data.title,
+  description: project.data.description,
+  codeRepository: project.data.repo,
+  programmingLanguage: project.data.stack,
+  author: { '@type': 'Person', name: SITE.name, url: SITE.github },
+  dateCreated: project.data.year,
+  url: new URL(projectHref(project.id), SITE.url).href,
+};
+---
+<BaseLayout title={project.data.title} description={project.data.description} type="article" schema={schema}>
+  <header class="project-head">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="面包屑">
+        <a href="/">首页</a>
+        <span class="breadcrumb__sep">/</span>
+        <a href="/projects">项目</a>
+        <span class="breadcrumb__sep">/</span>
+        <span>{project.data.year}</span>
+      </nav>
+
+      <div class="project-head__grid">
+        <div>
+          <div class="badges" style="margin-bottom:16px">
+            <Badge tone={STATUS_TONES[project.data.status]}>{STATUS_LABELS[project.data.status]}</Badge>
+            {project.data.featured && <Badge tone="purple">精选</Badge>}
+            <Badge>{project.data.year}</Badge>
+          </div>
+          <h1>{project.data.title}</h1>
+          <p>{project.data.description}</p>
+        </div>
+        <div class="project-head__actions">
+          {project.data.demo && (
+            <a class="btn btn--primary" href={project.data.demo} target="_blank" rel="noreferrer">
+              访问站点 <Icon name="arrow-up-right" size={14} />
+            </a>
+          )}
+          {project.data.repo && (
+            <a class="btn btn--ghost" href={project.data.repo} target="_blank" rel="noreferrer">
+              <Icon name="github" size={14} /> 源码
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div class:list={['project-visual', `project-visual--${project.data.accent}`]}>
+        <div class="project-visual__index" aria-hidden="true">{no}</div>
+        <div class="project-visual__tag">
+          <i></i> {project.data.tagline}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="project-detail">
+      <div class="project-content">
+        <article class="prose">
+          <Content />
+        </article>
+
+        <div class="article-foot">
+          <div class="article-tags">
+            {project.data.stack.map((item) => <Badge>{item}</Badge>)}
+          </div>
+          <div class="article-share">
+            <button class="btn btn--ghost btn--small" type="button" data-copy-link data-label="复制链接">复制链接</button>
+          </div>
+        </div>
+
+        <nav class="article-nav" aria-label="项目导航">
+          <a class="article-nav__item" href="/projects">
+            <span class="article-nav__label">← 全部项目</span>
+            <span class="article-nav__title">浏览项目列表</span>
+          </a>
+          <a class="article-nav__item article-nav__item--next" href={projectHref(next.id)}>
+            <span class="article-nav__label">下一个项目 →</span>
+            <span class="article-nav__title">{next.data.title}</span>
+          </a>
+        </nav>
+
+        <Giscus title="关于这个项目的讨论" />
+      </div>
+
+      <aside class="project-aside" aria-label="项目信息">
+        <div class="project-aside__row">
+          <span class="project-aside__label">Status</span>
+          <span class="project-aside__value">{STATUS_LABELS[project.data.status]}</span>
+        </div>
+        <div class="project-aside__row">
+          <span class="project-aside__label">Year</span>
+          <span class="project-aside__value">{project.data.year}</span>
+        </div>
+        <div class="project-aside__row">
+          <span class="project-aside__label">Stack</span>
+          <span class="project-aside__stack">
+            {project.data.stack.map((item) => <Badge>{item}</Badge>)}
+          </span>
+        </div>
+        <div class="project-aside__row">
+          <span class="project-aside__label">Links</span>
+          <span class="project-aside__value">
+            {project.data.repo ? <a href={project.data.repo} target="_blank" rel="noreferrer" style="color:var(--green-soft)">GitHub 仓库 ↗</a> : '暂未公开'}
+            {project.data.demo && <><br /><a href={project.data.demo} target="_blank" rel="noreferrer" style="color:var(--green-soft)">在线访问 ↗</a></>}
+          </span>
+        </div>
+        <div class="project-aside__row">
+          <span class="project-aside__label">Updated</span>
+          <span class="project-aside__value">持续更新</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

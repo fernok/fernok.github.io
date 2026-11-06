@@ -1,0 +1,101 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DocsSidebar from '../../components/DocsSidebar.astro';
+import Toc from '../../components/Toc.astro';
+import { SITE } from '../../config';
+import { adjacentDocs, docHref, formatDate, groupDocs, isoDate } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs', ({ data }) => !data.draft);
+  return docs.map((doc) => ({ params: { slug: doc.id }, props: { doc } }));
+}
+
+const { doc } = Astro.props;
+const { Content, headings } = await render(doc);
+const allDocs = (await getCollection('docs', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const { previous, next } = adjacentDocs(allDocs, doc.id);
+const groups = groupDocs(allDocs);
+const sectionIndex = groups.findIndex((group) => group.section === doc.data.section);
+const group = groups[sectionIndex];
+const position = group?.items.findIndex((item) => item.id === doc.id) ?? 0;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: doc.data.title,
+  description: doc.data.description,
+  dateModified: (doc.data.updatedDate ?? new Date()).toISOString(),
+  author: { '@type': 'Person', name: SITE.name, url: SITE.github },
+  mainEntityOfPage: new URL(docHref(doc.id), SITE.url).href,
+  inLanguage: 'zh-CN',
+};
+---
+<BaseLayout title={`${doc.data.title} · 文档`} description={doc.data.description} type="article" schema={schema}>
+  <div class="container docs-shell">
+    <div class="docs-layout">
+      <DocsSidebar docs={allDocs} currentId={doc.id} />
+
+      <div>
+        <details class="docs-nav-mobile">
+          <summary>文档目录</summary>
+          <DocsSidebar docs={allDocs} currentId={doc.id} />
+        </details>
+
+        <header class="doc-head">
+          <nav class="doc-breadcrumb" aria-label="面包屑">
+            <a href="/docs">Docs</a>
+            <span class="breadcrumb__sep">/</span>
+            <span>{doc.data.section}</span>
+            <span class="breadcrumb__sep">/</span>
+            <span>{String(position + 1).padStart(2, '0')}</span>
+          </nav>
+          <h1 class="doc-title">{doc.data.title}</h1>
+          <p class="doc-desc">{doc.data.description}</p>
+          <div class="doc-meta">
+            <span>Guide / {String(doc.data.order).padStart(2, '0')}</span>
+            {doc.data.updatedDate && (
+              <span>
+                更新于 <time datetime={isoDate(doc.data.updatedDate)}>{formatDate(doc.data.updatedDate)}</time>
+              </span>
+            )}
+            <span>预计 6 分钟</span>
+          </div>
+        </header>
+
+        <article class="prose doc-content">
+          <Content />
+        </article>
+
+        <nav class="doc-footer" aria-label="文档翻页">
+          {previous ? (
+            <a href={docHref(previous.id)}>
+              <span>← 上一篇</span>
+              <strong>{previous.data.title}</strong>
+            </a>
+          ) : (
+            <a href="/docs">
+              <span>← 文档首页</span>
+              <strong>浏览全部文档</strong>
+            </a>
+          )}
+          {next ? (
+            <a href={docHref(next.id)}>
+              <span>下一篇 →</span>
+              <strong>{next.data.title}</strong>
+            </a>
+          ) : (
+            <a href="/blog">
+              <span>接下来 →</span>
+              <strong>去博客看看</strong>
+            </a>
+          )}
+        </nav>
+      </div>
+
+      <Toc headings={headings} />
+    </div>
+  </div>
+</BaseLayout>

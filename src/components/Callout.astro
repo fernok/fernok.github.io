@@ -1,0 +1,19 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  type?: 'note' | 'info' | 'warn' | 'danger';
+  title?: string;
+}
+
+const { type = 'note', title } = Astro.props;
+const icon = type === 'warn' || type === 'danger' ? 'alert' : type === 'info' ? 'info' : 'bulb';
+const labels = { note: 'NOTE', info: 'INFO', warn: 'WARNING', danger: 'DANGER' };
+---
+<aside class:list={['callout', `callout--${type}`]}>
+  <div class="callout__icon"><Icon name={icon} size={16} /></div>
+  <div>
+    <div class="callout__title">{title ?? labels[type]}</div>
+    <slot />
+  </div>
+</aside>

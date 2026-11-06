@@ -1,0 +1,36 @@
+---
+import { formatDate, postHref, readingTime, type BlogPost } from '../lib/content';
+import Badge from './Badge.astro';
+
+interface Props {
+  post: BlogPost;
+  index?: number;
+  featured?: boolean;
+}
+
+const { post, index = 0, featured = false } = Astro.props;
+const { data } = post;
+const no = String(index + 1).padStart(2, '0');
+---
+<article
+  class:list={['post-card', featured && 'post-card--featured']}
+  data-post-card
+  data-tags={JSON.stringify(data.tags)}
+>
+  <div class="post-card__meta">
+    <span>NO. {no} / {formatDate(data.pubDate)}</span>
+    {featured && <span class="green">Featured</span>}
+  </div>
+
+  <h3 class="post-card__title">
+    <a href={postHref(post.id)}>{data.title}</a>
+  </h3>
+  <p class="post-card__desc">{data.description}</p>
+
+  <div class="post-card__foot">
+    <div class="post-card__tags">
+      {data.tags.slice(0, 3).map((tag) => <Badge>{tag}</Badge>)}
+    </div>
+    <span class="post-card__read">{readingTime(post.body)} min</span>
+  </div>
+</article>

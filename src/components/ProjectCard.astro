@@ -1,0 +1,48 @@
+---
+import { STATUS_LABELS, STATUS_TONES } from '../config';
+import { projectHref, type ProjectEntry } from '../lib/content';
+import Badge from './Badge.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  project: ProjectEntry;
+  index?: number;
+}
+
+const { project, index = 0 } = Astro.props;
+const { data } = project;
+---
+<article
+  class="project-card"
+  data-project-card
+  data-status={data.status}
+  data-index={String(index + 1).padStart(2, '0')}
+  data-tags={JSON.stringify([...data.stack, STATUS_LABELS[data.status]])}
+>
+  <div class="project-card__inner">
+    <div class="project-card__top">
+      <div class="project-card__publisher">
+        <Icon name="folder" size={13} />
+        <span>fernok / {data.year}</span>
+      </div>
+      <div class="badges">
+        <Badge tone={STATUS_TONES[data.status]}>{STATUS_LABELS[data.status]}</Badge>
+        {data.featured && <Badge tone="purple">精选</Badge>}
+      </div>
+    </div>
+
+    <h3 class="project-card__title">
+      <a href={projectHref(project.id)}>{data.title}</a>
+    </h3>
+    <p class="project-card__desc">{data.description}</p>
+
+    <div class="project-card__foot">
+      <div class="project-card__stack">
+        {data.stack.slice(0, 3).map((item) => <span>{item}</span>)}
+      </div>
+      <span class="project-card__arrow" aria-hidden="true">
+        <Icon name="arrow-up-right" size={13} />
+      </span>
+    </div>
+  </div>
+</article>

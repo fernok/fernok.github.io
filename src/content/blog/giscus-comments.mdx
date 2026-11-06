@@ -1,0 +1,110 @@
+---
+title: 用 Giscus 给静态博客接上评论
+description: 不需要数据库，不需要后端，把评论存进 GitHub Discussions 的完整配置记录。
+pubDate: 2026-10-20
+tags: [评论, 工程]
+series: 构建
+---
+
+import Callout from '../../components/Callout.astro';
+
+静态站点最尴尬的地方是：页面是静态的，评论却天然是动态的。
+
+常见方案有三种：接第三方评论服务、自建后端、或者干脆不要评论。Giscus 属于第四种：**把评论存进 GitHub Discussions**。没有数据库，没有服务费，登录和通知都复用 GitHub。
+
+## 前置条件
+
+1. 仓库是公开的；
+2. 仓库开启了 Discussions；
+3. 安装了 [giscus GitHub App](https://github.com/apps/giscus)。
+
+第三步最容易被忽略。如果 App 没装，评论区会显示错误，而不是自动创建讨论。
+
+<Callout type="warn" title="先装 App">
+  打开 giscus.app，按页面提示授权仓库。只需要一次，之后评论会以你的仓库身份创建 Discussion。
+</Callout>
+
+## 获取四个 ID
+
+在 [giscus.app](https://giscus.app) 填入仓库名，页面会生成一段配置。核心是这四个值：
+
+| 字段 | 示例 | 说明 |
+| --- | --- | --- |
+| `data-repo` | `fernok/fernok.github.io` | 仓库全名 |
+| `data-repo-id` | `R_kgDO...` | 仓库节点 ID |
+| `data-category` | `General` | Discussion 分类名 |
+| `data-category-id` | `DIC_kwDO...` | 分类节点 ID |
+
+分类建议单独建一个 `Comments`，不要和公告混在一起。这样通知和权限都更清晰。
+
+## 挂载组件
+
+我把它封装成了一个 Astro 组件，只在滚动到评论区附近时才加载脚本：
+
+```ts
+const observer = new IntersectionObserver(
+  (entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      observer.disconnect();
+      loadGiscus();
+    }
+  },
+  { rootMargin: '500px 0px' },
+);
+```
+
+加载时把配置写成 `data-*` 属性：
+
+```ts
+const script = document.createElement('script');
+script.src = 'https://giscus.app/client.js';
+script.async = true;
+script.crossOrigin = 'anonymous';
+
+const attrs = {
+  'data-repo': repo,
+  'data-repo-id': repoId,
+  'data-category': category,
+  'data-category-id': categoryId,
+  'data-mapping': 'pathname',
+  'data-reactions-enabled': '1',
+  'data-theme': 'dark',
+  'data-lang': 'zh-CN',
+};
+
+for (const [key, value] of Object.entries(attrs)) {
+  script.setAttribute(key, value);
+}
+```
+
+## mapping 怎么选
+
+`pathname` 最省心：每个页面路径对应一个讨论。改标题不会丢评论。
+
+`specific` 需要手动给每个页面指定 term，适合多语言站点或一个页面多个评论区。`og:title` 则依赖 meta 标签，改标题会影响映射。
+
+我用的是 `pathname`，并且在站点改版时尽量不修改文章 URL。
+
+## 主题与暗色模式
+
+Giscus 支持 `dark`、`dark_dimmed`、`transparent_dark` 等主题。这个站点本身是纯深色，用 `dark` 最稳。
+
+如果要做明暗切换，可以监听主题变化，向 iframe 发送消息：
+
+```ts
+const iframe = document.querySelector('iframe.giscus-frame');
+iframe?.contentWindow?.postMessage(
+  { giscus: { setConfig: { theme: 'light' } } },
+  'https://giscus.app',
+);
+```
+
+## 数据归谁
+
+这是 Giscus 最让我放心的地方：评论就是 Discussion。你可以用 GitHub 的搜索、通知、审核工具管理它们，也可以随时导出。哪怕哪天不用 Giscus 了，内容仍然在仓库里。
+
+<Callout type="info" title="隐私">
+  Giscus 不收集用户行为数据。访客需要登录 GitHub 才能评论，但阅读不需要。
+</Callout>
+
+配置完整版可以直接看这个站点的 [评论文档](/docs/comments)，里面有环境变量和 GitHub Actions 的写法。

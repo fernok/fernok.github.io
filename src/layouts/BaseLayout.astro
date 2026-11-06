@@ -1,0 +1,48 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../config';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  noIndex?: boolean;
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { title, description, image, type, noIndex, schema } = Astro.props;
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.title,
+  url: SITE.url,
+  description: SITE.description,
+  inLanguage: 'zh-CN',
+  author: {
+    '@type': 'Person',
+    name: SITE.name,
+    url: SITE.github,
+  },
+};
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <BaseHead title={title} description={description} image={image} type={type} noIndex={noIndex} schema={schema ?? websiteSchema} />
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import '../scripts/site.js';
+    </script>
+  </body>
+</html>

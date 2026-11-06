@@ -1,0 +1,70 @@
+---
+import { SITE } from '../config';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <div class="eyebrow">Open channel</div>
+        <h2>有个想法？<br />一起把它<span>编译出来</span>。</h2>
+      </div>
+      <a class="btn btn--primary" href={SITE.github} target="_blank" rel="noreferrer">
+        在 GitHub 找到我 <Icon name="arrow-up-right" size={15} />
+      </a>
+    </div>
+
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="回到首页">
+          <Logo class="brand__mark" />
+          <span class="brand__text">
+            <span class="brand__word">FERNOK</span>
+            <span class="brand__cn">编程小蕨</span>
+          </span>
+        </a>
+        <p>写代码，也写清楚代码为什么这样写。一个关于 Astro、TypeScript 与工具链的个人站点。</p>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-col__label">Explore</div>
+        <ul>
+          <li><a href="/blog">博客</a></li>
+          <li><a href="/docs">文档</a></li>
+          <li><a href="/projects">项目</a></li>
+          <li><a href="/about">关于</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-col__label">Elsewhere</div>
+        <ul>
+          <li><a href={SITE.github} target="_blank" rel="noreferrer"><Icon name="github" size={13} /> GitHub</a></li>
+          <li><a href="/rss.xml"><Icon name="rss" size={13} /> RSS</a></li>
+          <li><a href={SITE.repo} target="_blank" rel="noreferrer"><Icon name="code" size={13} /> 站点源码</a></li>
+          <li><a href="/docs/comments"><Icon name="link" size={13} /> 评论配置</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-col__label">Colophon</div>
+        <ul>
+          <li><a href="https://astro.build" target="_blank" rel="noreferrer">Astro 7</a></li>
+          <li><a href="https://bun.sh" target="_blank" rel="noreferrer">Bun 1.4</a></li>
+          <li><a href="https://giscus.app" target="_blank" rel="noreferrer">Giscus</a></li>
+          <li><a href="https://pages.github.com" target="_blank" rel="noreferrer">GitHub Pages</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-word" aria-hidden="true">FERNOK</div>
+
+    <div class="footer-bottom">
+      <span>© {year} {SITE.name} · Built with Astro &amp; Bun</span>
+      <span><i></i> 保留所有好奇 <a href="#top" style="margin-left:12px">回到顶部 ↑</a></span>
+    </div>
+  </div>
+</footer>

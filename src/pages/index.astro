@@ -1,0 +1,212 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHead from '../components/SectionHead.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import PostCard from '../components/PostCard.astro';
+import Icon from '../components/Icon.astro';
+import { byDateDesc } from '../lib/content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(byDateDesc);
+const docs = (await getCollection('docs', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order,
+);
+
+const featuredProjects = projects.slice(0, 3);
+const latestPosts = posts.slice(0, 3);
+const shipped = projects.filter((project) => project.data.status === 'shipped').length;
+const postsCount = String(posts.length).padStart(2, '0');
+const docsCount = String(docs.length).padStart(2, '0');
+const projectsCount = String(projects.length).padStart(2, '0');
+---
+<BaseLayout
+  title="编程小蕨 Fernok — 把想法编译成产品"
+  description="编程小蕨 Fernok 的个人站点。写 Astro、TypeScript 与工具链，分享可运行的项目和清晰的文档。"
+>
+  <section class="hero">
+    <div class="container hero__grid">
+      <div>
+        <div class="hero__badge">
+          <span class="hero__dot"></span>
+          <b>OPEN SOURCE</b>
+          <span>/</span>
+          <span>INDEPENDENT DEVELOPER</span>
+        </div>
+
+        <h1>
+          把想法编译成<br />
+          <span class="hero__line">可运行的产品<span class="hero__dot">.</span><span class="hero__underline"></span></span>
+        </h1>
+
+        <p class="hero__desc">
+          你好，我是<strong>编程小蕨 Fernok</strong>。这里记录我如何用 Astro、TypeScript
+          和一堆趁手的工具，把模糊的念头变成能被打开、被使用、被讨论的东西。
+        </p>
+
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="/projects">
+            浏览项目 <Icon name="arrow-right" size={15} />
+          </a>
+          <a class="btn btn--ghost" href="/docs">
+            阅读文档 <Icon name="book" size={15} />
+          </a>
+        </div>
+
+        <div class="hero__meta">
+          <span><i></i> Astro 7</span>
+          <span><i></i> Bun</span>
+          <span><i></i> GitHub Pages</span>
+          <span><i></i> 中文 / 英文</span>
+        </div>
+      </div>
+
+      <div class="hero__console-wrap" aria-label="终端演示">
+        <div class="console-glow"></div>
+        <div class="console">
+          <div class="console__bar">
+            <div class="console__dots"><i></i><i></i><i></i></div>
+            <div class="console__path">fernok@dev — ~/workspace</div>
+            <div class="console__live">online</div>
+          </div>
+          <div class="console__body">
+            <div class="console__line"><span class="console__prompt">fernok@dev:~$</span><span class="console__cmd">whoami</span></div>
+            <div class="console__line"><span class="console__out">independent developer / writer / tinkerer</span></div>
+            <div class="console__space"></div>
+            <div class="console__line"><span class="console__prompt">fernok@dev:~$</span><span class="console__cmd">cat stack.json</span></div>
+            <div class="console__line"><span class="console__out">&#123;</span></div>
+            <div class="console__line"><span class="console__out">  </span><span class="console__key">"runtime"</span><span class="console__out">: </span><span class="console__str">"bun"</span><span class="console__out">,</span></div>
+            <div class="console__line"><span class="console__out">  </span><span class="console__key">"framework"</span><span class="console__out">: </span><span class="console__str">"astro"</span><span class="console__out">,</span></div>
+            <div class="console__line"><span class="console__out">  </span><span class="console__key">"content"</span><span class="console__out">: [</span><span class="console__str">"md"</span><span class="console__out">, </span><span class="console__str">"mdx"</span><span class="console__out">],</span></div>
+            <div class="console__line"><span class="console__out">  </span><span class="console__key">"comments"</span><span class="console__out">: </span><span class="console__str">"giscus"</span></div>
+            <div class="console__line"><span class="console__out">&#125;</span></div>
+            <div class="console__space"></div>
+            <div class="console__line"><span class="console__prompt">fernok@dev:~$</span><span class="console__cmd">bun run build</span></div>
+            <div class="console__line"><span class="console__ok">✓</span><span class="console__out"> built in </span><span class="console__num">1.42s</span></div>
+            <div class="console__line"><span class="console__ok">✓</span><span class="console__out"> 19 pages · 0 errors</span></div>
+          </div>
+          <div class="console__foot">
+            <span><b>bun</b> 1.4.4</span>
+            <span><b>astro</b> 7.4</span>
+            <span><b>status</b> ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="stats" aria-label="站点统计">
+      <div class="stat">
+        <div class="stat__label">Posts / 文章</div>
+        <div class="stat__value">{postsCount}<span>篇</span></div>
+        <div class="stat__note">持续更新中</div>
+      </div>
+      <div class="stat">
+        <div class="stat__label">Docs / 文档</div>
+        <div class="stat__value">{docsCount}<span>篇</span></div>
+        <div class="stat__note">从入门到部署</div>
+      </div>
+      <div class="stat">
+        <div class="stat__label">Projects / 项目</div>
+        <div class="stat__value">{projectsCount}<span>个</span></div>
+        <div class="stat__note">{shipped} 个已上线</div>
+      </div>
+      <div class="stat">
+        <div class="stat__label">Build / 构建</div>
+        <div class="stat__value">1.4<span>s</span></div>
+        <div class="stat__note">Bun + Astro</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section reveal">
+    <div class="container">
+      <SectionHead
+        eyebrow="Selected work"
+        title="精选项目"
+        description="能跑起来的东西，比幻灯片更有说服力。这里是我最近在构建和打磨的项目。"
+        href="/projects"
+        linkLabel="全部项目"
+      />
+      <div class="card-grid">
+        {featuredProjects.map((project, index) => <ProjectCard project={project} index={index} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <div class="container">
+      <SectionHead
+        eyebrow="From the journal"
+        title="最新文章"
+        description="关于 Astro、Bun、内容系统，以及那些在构建过程中突然想明白的事。"
+        href="/blog"
+        linkLabel="全部文章"
+      />
+      <div class="post-grid">
+        {latestPosts.map((post, index) => <PostCard post={post} index={index} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <div class="container">
+      <div class="quickstart">
+        <div class="quickstart__copy">
+          <div class="eyebrow">Quickstart</div>
+          <h2 class="quickstart__title">从零开始，<br />五分钟上线。</h2>
+          <p class="quickstart__desc">
+            这个站点没有隐藏魔法。完整的目录结构、内容写法、Giscus 配置和 GitHub Actions
+            部署流程，都写在文档里。
+          </p>
+          <ul class="quickstart__list">
+            <li><Icon name="check" size={13} /> Astro 7 内容集合与 MDX</li>
+            <li><Icon name="check" size={13} /> Bun 构建 + GitHub Pages 部署</li>
+            <li><Icon name="check" size={13} /> Giscus 评论接入指南</li>
+          </ul>
+          <a class="btn btn--ghost" href="/docs">打开文档 <Icon name="arrow-right" size={14} /></a>
+        </div>
+        <div class="quickstart__code">
+          <div class="code-head">
+            <span class="code-head__dot"></span>
+            <span class="code-head__dot"></span>
+            <span class="code-head__dot"></span>
+            <span class="code-head__title">~/fernok.github.io</span>
+            <span class="code-head__tag">bun</span>
+          </div>
+          <pre class="quickstart__pre"><code><span class="c"># 1. 克隆仓库</span>
+<span class="p">$</span> gh repo clone fernok/fernok.github.io
+<span class="p">$</span> cd fernok.github.io
+
+<span class="c"># 2. 安装依赖</span>
+<span class="p">$</span> bun install
+
+<span class="c"># 3. 本地预览</span>
+<span class="p">$</span> bun run dev
+<span class="y">➜</span>  local   <span class="s">http://localhost:4321/</span>
+
+<span class="c"># 4. 构建静态站点</span>
+<span class="p">$</span> bun run build
+<span class="y">✓</span>  <span class="s">dist/</span> ready for GitHub Pages
+
+<span class="c"># 5. 推送，让 Actions 接管</span>
+<span class="p">$</span> git push origin main</code></pre>
+        </div>
+      </div>
+
+      <div class="cta-panel">
+        <div>
+          <div class="eyebrow">Stay in the loop</div>
+          <h2>不想错过更新？<br />用 <span>RSS</span> 把它带走。</h2>
+        </div>
+        <div class="cta-panel__actions">
+          <a class="btn btn--primary" href="/rss.xml">
+            RSS 订阅 <Icon name="rss" size={15} />
+          </a>
+          <a class="btn btn--ghost" href="/blog">全部文章 <Icon name="arrow-right" size={15} /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,115 @@
+---
+title: 设计系统
+description: 深色、克制、绿色只用在需要被看见的地方——这套视觉的规则与变量。
+section: 指南
+order: 4
+updatedDate: 2026-11-04
+tags: [设计, CSS]
+---
+
+import Callout from '../../components/Callout.astro';
+
+视觉参考了 [NVIDIA Build 的模型目录](https://build.nvidia.com/models)：纯深色背景、细边框卡片、紧凑的信息层级，以及一种「工程感」而不是「营销感」的气质。
+
+## 基本原则
+
+1. **内容优先。** 装饰不能抢标题和正文的注意力。
+2. **一种强调色。** 绿色只用于当前状态、可交互元素和关键数字。
+3. **边框即结构。** 用 1px 边框划分区域，少用阴影和大圆角。
+4. **信息密度可以高。** 但每个元素都要有明确的层级。
+
+## 颜色
+
+| Token | 值 | 用途 |
+| --- | --- | --- |
+| `--bg` | `#0c0c0c` | 页面背景 |
+| `--bg-panel` | `#111111` | 面板、侧栏 |
+| `--bg-card` | `#151515` | 卡片 |
+| `--line` | `#2a2a2a` | 常规分隔线 |
+| `--line-strong` | `#3d3d3d` | 卡片边框 |
+| `--text` | `#f2f2f2` | 主文字 |
+| `--muted` | `#a7a7a7` | 次要文字 |
+| `--dim` | `#757575` | 辅助信息 |
+| `--green` | `#76b900` | 品牌绿 |
+| `--lime` | `#bff230` | 代码与高亮 |
+| `--blue` | `#7cd7fe` | 信息类徽章 |
+| `--purple` | `#c4a7ff` | 精选类徽章 |
+
+所有变量集中在 `src/styles/global.css` 的 `:root`。改一个值，全站生效。
+
+## 字体
+
+```css
+--font-sans: 'Inter Variable', 'Noto Sans SC', 'PingFang SC', sans-serif;
+--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+```
+
+- 正文 16–17px，行高 1.8；
+- 大标题使用负字距 `-0.045em`，营造紧凑感；
+- 所有标签、日期、状态使用等宽字体；
+- 中文回退到系统字体，避免加载几 MB 的 CJK 字体。
+
+## 间距与圆角
+
+- 页面左右留白：`clamp(20px, 4vw, 48px)`
+- 内容最大宽度：`1440px`；文章正文 `760px`
+- 卡片圆角：`8px`；面板 `14px`
+- 卡片间距：`20px`
+- 区块垂直间距：`clamp(72px, 9vw, 118px)`
+
+## 组件
+
+| 组件 | 文件 | 用途 |
+| --- | --- | --- |
+| `Header` | `src/components/Header.astro` | 导航、搜索入口 |
+| `Footer` | `src/components/Footer.astro` | 全站页脚 |
+| `PageHeader` | `src/components/PageHeader.astro` | 列表页标题与标签页 |
+| `ProjectCard` | `src/components/ProjectCard.astro` | 项目卡片 |
+| `PostCard` | `src/components/PostCard.astro` | 文章卡片 |
+| `Toc` | `src/components/Toc.astro` | 文章目录 |
+| `Giscus` | `src/components/Giscus.astro` | 评论 |
+| `Callout` | `src/components/Callout.astro` | MDX 提示框 |
+| `Steps` / `Step` | `src/components/Steps.astro` | MDX 步骤条 |
+
+## 卡片的结构
+
+项目卡片参考了模型卡片的布局：
+
+```text
+┌─────────────────────────────────────┐
+│ 发布者 / 年份              [状态]    │
+│                                     │
+│ 项目标题                            │
+│ 一句话描述，最多三行                 │
+│                                     │
+├─────────────────────────────────────┤
+│ 技术栈 · 技术栈                 [↗] │
+└─────────────────────────────────────┘
+```
+
+底部用一条贯穿卡片宽度的分隔线与内容区隔开，这是 NVIDIA 模型卡片最显著的特征之一。
+
+## 响应式
+
+断点只有四个：
+
+| 宽度 | 变化 |
+| --- | --- |
+| `1180px` | 隐藏文章右侧目录；文档变两栏 |
+| `1020px` | 首页 Hero 变单栏；Quickstart 堆叠 |
+| `880px` | 顶部导航折叠；页脚精简 |
+| `720px` | 单列卡片；Hero 标题缩小 |
+
+移动端优先保证「能读」：隐藏装饰性的终端窗口，保留所有内容和操作。
+
+## 可访问性
+
+- 所有交互元素有 `:focus-visible` 样式；
+- 颜色对比度满足 WCAG AA；
+- 支持 `prefers-reduced-motion`；
+- 图片和图标区分装饰性与语义性，装饰性元素标记 `aria-hidden`；
+- 跳过导航链接在键盘聚焦时出现。
+
+<Callout type="note" title="不要过度设计">
+  如果一个新的装饰元素不能帮助读者理解内容，它大概率不该出现在这个站点上。
+</Callout>

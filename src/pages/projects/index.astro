@@ -1,0 +1,85 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Icon from '../../components/Icon.astro';
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order,
+);
+const shipped = projects.filter((project) => project.data.status === 'shipped').length;
+const building = projects.filter((project) => project.data.status === 'building').length;
+const concept = projects.filter((project) => project.data.status === 'concept').length;
+const count = String(projects.length).padStart(2, '0');
+---
+<BaseLayout
+  title="项目"
+  description="编程小蕨 Fernok 的项目：开源工具、实验性产品与正在构建的东西。"
+>
+  <PageHeader
+    icon="cube"
+    kicker="Selected work / 2024—2026"
+    title="Projects"
+    description="一些已经上线的东西，一些还在长出来的东西。每一个都从「如果这样会不会更好」开始。"
+    tabs={[
+      { label: '全部项目', href: '/projects', current: true },
+      { label: 'GitHub @fernok', href: 'https://github.com/fernok', external: true },
+    ]}
+  />
+
+  <div class="container" data-filter-scope>
+    <div class="catalog-bar" data-filter-group>
+      <div class="chips" role="group" aria-label="按状态筛选项目">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">全部</button>
+        <button class="chip" type="button" data-filter="shipped" aria-pressed="false">
+          已上线<span class="chip__count">{shipped}</span>
+        </button>
+        <button class="chip" type="button" data-filter="building" aria-pressed="false">
+          构建中<span class="chip__count">{building}</span>
+        </button>
+        <button class="chip" type="button" data-filter="concept" aria-pressed="false">
+          构思中<span class="chip__count">{concept}</span>
+        </button>
+      </div>
+      <div class="catalog-count" data-filter-count data-unit="PROJECTS">{count} PROJECTS</div>
+    </div>
+
+    <div class="card-grid">
+      {projects.map((project, index) => <ProjectCard project={project} index={index} />)}
+    </div>
+    <div class="catalog-empty" data-filter-empty hidden>这个状态下还没有项目，换一个看看。</div>
+
+    <section class="section section--tight" style="padding-bottom:20px">
+      <div class="quickstart">
+        <div class="quickstart__copy">
+          <div class="eyebrow">Build in public</div>
+          <h2 class="quickstart__title">想法不落地，<br />就只是想法。</h2>
+          <p class="quickstart__desc">
+            我喜欢把过程也留在仓库里：提交信息、设计取舍、失败的尝试。如果你想看某个项目是怎么搭起来的，欢迎直接翻源码或开一个 Discussion。
+          </p>
+          <a class="btn btn--ghost" href="https://github.com/fernok" target="_blank" rel="noreferrer">
+            在 GitHub 查看 <Icon name="github" size={14} />
+          </a>
+        </div>
+        <div class="quickstart__code">
+          <div class="code-head">
+            <span class="code-head__dot"></span>
+            <span class="code-head__dot"></span>
+            <span class="code-head__dot"></span>
+            <span class="code-head__title">~/workspace</span>
+            <span class="code-head__tag">git</span>
+          </div>
+          <pre class="quickstart__pre"><code><span class="p">$</span> gh repo list fernok --limit 10
+
+<span class="s">trendshift-lite</span>   GitHub trending board
+<span class="s">fernok.github.io</span>  this website
+<span class="s">fernok</span>            profile repository
+
+<span class="c"># 找一个感兴趣的项目，直接读代码</span>
+<span class="p">$</span> gh repo clone fernok/trendshift-lite</code></pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

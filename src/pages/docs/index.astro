@@ -1,0 +1,114 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import Icon from '../../components/Icon.astro';
+import { docHref } from '../../lib/content';
+
+const docs = (await getCollection('docs', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+---
+<BaseLayout
+  title="文档"
+  description="编程小蕨 Fernok 的站点文档：快速开始、内容写作、Giscus 评论与 Bun + GitHub Pages 部署。"
+>
+  <PageHeader
+    icon="book"
+    kicker="Documentation / v1.0"
+    title="Docs"
+    description="这个站点是怎么长出来的。从本地开发到自动化部署，把每一块拼图讲清楚。"
+    tabs={[
+      { label: '文档首页', href: '/docs', current: true },
+      { label: 'GitHub 仓库', href: 'https://github.com/fernok/fernok.github.io', external: true },
+    ]}
+  />
+
+  <div class="container docs-index">
+    <div class="docs-start" style="margin-top:34px">
+      <div class="docs-start__copy">
+        <div class="eyebrow">Quickstart</div>
+        <h2>第一次来？从这里开始。</h2>
+        <p>
+          只需要 Bun 和一个终端。克隆仓库、安装依赖、启动开发服务器，然后打开
+          <code>src/content/blog</code> 写下第一篇文章。
+        </p>
+        <a class="btn btn--primary btn--small" href="/docs/getting-started" style="margin-top:20px">
+          阅读快速开始 <Icon name="arrow-right" size={14} />
+        </a>
+      </div>
+      <div class="docs-start__code">
+        <div class="code-head">
+          <span class="code-head__dot"></span>
+          <span class="code-head__dot"></span>
+          <span class="code-head__dot"></span>
+          <span class="code-head__title">terminal</span>
+          <span class="code-head__tag">bun</span>
+        </div>
+        <pre class="quickstart__pre"><code><span class="p">$</span> bun install
+<span class="p">$</span> bun run dev
+<span class="y">➜</span>  <span class="s">http://localhost:4321</span>
+
+<span class="c"># 构建 &amp; 预览</span>
+<span class="p">$</span> bun run build
+<span class="p">$</span> bun run preview</code></pre>
+      </div>
+    </div>
+
+    <section class="section section--tight">
+      <SectionHead
+        eyebrow="All guides"
+        title="全部文档"
+        description="按使用顺序排列。每一篇都可以单独阅读，也可以从头到尾当作一次完整的搭建练习。"
+      />
+      <div class="docs-card-grid">
+        {docs.map((doc, index) => (
+          <a class="docs-card" href={docHref(doc.id)}>
+            <span class="docs-card__index">GUIDE / {String(index + 1).padStart(2, '0')}</span>
+            <h2>{doc.data.title}</h2>
+            <p>{doc.data.description}</p>
+            <span class="docs-card__arrow">阅读文档 →</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section section--tight">
+      <div class="quickstart">
+        <div class="quickstart__copy">
+          <div class="eyebrow">Conventions</div>
+          <h2 class="quickstart__title">内容即代码，<br />但首先是内容。</h2>
+          <p class="quickstart__desc">
+            所有文章、文档和项目介绍都存放在 <code>src/content</code>，用 Markdown 或 MDX
+            书写。Frontmatter 提供元数据，构建时自动生成列表、RSS、站点地图和检索索引。
+          </p>
+          <ul class="quickstart__list">
+            <li><Icon name="check" size={13} /> 文件即路由，无需手动注册</li>
+            <li><Icon name="check" size={13} /> 类型安全的 frontmatter 校验</li>
+            <li><Icon name="check" size={13} /> Markdown 与 MDX 可以混用</li>
+          </ul>
+          <a class="btn btn--ghost" href="/docs/writing">学习写作约定 <Icon name="arrow-right" size={14} /></a>
+        </div>
+        <div class="quickstart__code">
+          <div class="code-head">
+            <span class="code-head__dot"></span>
+            <span class="code-head__dot"></span>
+            <span class="code-head__dot"></span>
+            <span class="code-head__title">src/content/blog/hello.mdx</span>
+            <span class="code-head__tag">mdx</span>
+          </div>
+          <pre class="quickstart__pre"><code><span class="c">---</span>
+<span class="k">title</span>: 你好，蕨类植物
+<span class="k">description</span>: 为什么我要重新开始写博客
+<span class="k">pubDate</span>: 2026-11-06
+<span class="k">tags</span>: [随笔, 构建]
+<span class="c">---</span>
+
+在这里写正文。支持 <span class="s">**Markdown**</span>
+和 <span class="s">&lt;Callout /&gt;</span> 这样的 MDX 组件。</code></pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

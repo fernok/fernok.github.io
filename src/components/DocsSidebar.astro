@@ -1,0 +1,32 @@
+---
+import { docHref, groupDocs, type DocEntry } from '../lib/content';
+import Icon from './Icon.astro';
+
+interface Props {
+  docs: DocEntry[];
+  currentId?: string;
+}
+
+const { docs, currentId } = Astro.props;
+const groups = groupDocs(docs);
+---
+<aside class="docs-sidebar" aria-label="文档目录">
+  <a class="docs-sidebar__home" href="/docs">
+    <Icon name="book" size={13} /> Documentation
+  </a>
+
+  {groups.map((group) => (
+    <div class="docs-group">
+      <div class="docs-group__label">{group.section}</div>
+      <ul>
+        {group.items.map((doc) => (
+          <li>
+            <a href={docHref(doc.id)} aria-current={doc.id === currentId ? 'page' : undefined}>
+              {doc.data.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</aside>

@@ -1,0 +1,69 @@
+---
+title: trendshift-lite
+tagline: GitHub Trending，但更轻
+description: 一个跑在 Cloudflare Workers 上的极简 GitHub Trending 看板，支持日榜、周榜和月榜。
+status: shipped
+year: "2026"
+stack: [JavaScript, Cloudflare Workers, GitHub API]
+repo: https://github.com/fernok/trendshift-lite
+featured: true
+order: 1
+accent: blue
+---
+
+import Callout from '../../components/Callout.astro';
+
+GitHub Trending 页面信息很全，但打开慢，而且没有 API。trendshift-lite 是一个更轻的替代品：只保留仓库名、描述、语言、星标数和周期变化，部署在 Cloudflare Workers 上。
+
+## 它解决什么
+
+- 打开就能看，不需要登录；
+- 日榜、周榜、月榜切换；
+- 响应式布局，手机上也能读完；
+- 没有数据库，所有数据来自 GitHub；
+- 部署成本接近零。
+
+## 技术选择
+
+项目使用 Cloudflare Workers 作为运行时，直接处理请求和缓存。没有引入前端框架，页面由 Worker 渲染后返回。
+
+```js
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const period = url.searchParams.get('since') ?? 'daily';
+
+    // 读取缓存，未命中时再请求 GitHub
+    const cacheKey = new Request(`https://trendshift.local/${period}`);
+    const cached = await caches.default.match(cacheKey);
+    if (cached) return cached;
+
+    const data = await fetchTrending(period);
+    const response = Response.json(data, {
+      headers: { 'Cache-Control': 'public, max-age=900' },
+    });
+
+    await caches.default.put(cacheKey, response.clone());
+    return response;
+  },
+};
+```
+
+缓存时间设为 15 分钟，在「足够新」和「不触发限流」之间取一个平衡。
+
+## 设计取舍
+
+<Callout type="info" title="为什么不做成 SPA">
+  Trending 数据每天变化几次，不需要实时。服务端渲染 + 边缘缓存能让首屏更快，也少了一整层客户端状态管理。
+</Callout>
+
+没有数据库是刻意的。这个项目的价值在于「快速看一眼」，不是做收藏、历史趋势或用户系统。每增加一个功能，都应该先问：它是否让「看一眼」变慢？
+
+## 可以继续做的
+
+- 按语言筛选；
+- 收藏与本地历史；
+- 把数据导出为 JSON；
+- 更好的空状态与错误提示。
+
+源码在 [GitHub](https://github.com/fernok/trendshift-lite)。如果你发现了问题，欢迎开 Issue 或直接提 PR。

@@ -1,0 +1,117 @@
+---
+title: 快速开始
+description: 用 Bun 在本地跑起这个站点，并了解它的目录结构与常用命令。
+section: 开始
+order: 1
+updatedDate: 2026-11-06
+tags: [安装, Bun]
+---
+
+import Callout from '../../components/Callout.astro';
+import Steps from '../../components/Steps.astro';
+import Step from '../../components/Step.astro';
+
+这个站点是一个标准的 Astro 静态站点。没有数据库，没有环境变量也能启动；评论是唯一需要额外配置的部分。
+
+## 环境要求
+
+- **Bun** 1.1 或更高版本（项目使用 1.4.4 构建）
+- **Node.js** 22+（部分工具链仍然需要，Bun 可以替代日常命令）
+- **Git**
+- 一个能打开终端的编辑器
+
+检查版本：
+
+```bash
+bun --version
+node --version
+git --version
+```
+
+<Callout type="info" title="为什么用 Bun">
+  安装依赖和运行脚本都更快，而且可以直接执行 TypeScript。CI 里同样使用 Bun，保证本地与线上环境一致。
+</Callout>
+
+## 安装
+
+```bash
+git clone https://github.com/fernok/fernok.github.io.git
+cd fernok.github.io
+bun install
+```
+
+启动开发服务器：
+
+```bash
+bun run dev
+```
+
+打开 `http://localhost:4321`。修改 `src` 下的文件会自动刷新。
+
+## 目录结构
+
+```text
+fernok.github.io/
+├── .github/workflows/deploy.yml   # GitHub Actions 部署
+├── public/                        # 静态资源、favicon、OG 图
+├── scripts/generate-og.mjs        # 生成社交分享图
+├── src/
+│   ├── components/                # Astro 组件
+│   ├── content/
+│   │   ├── blog/                  # 博客 .md / .mdx
+│   │   ├── docs/                  # 文档 .mdx
+│   │   └── projects/              # 项目介绍
+│   ├── layouts/
+│   ├── lib/content.ts             # 内容工具函数
+│   ├── pages/                     # 路由
+│   ├── scripts/site.js            # 搜索、筛选、目录等交互
+│   ├── styles/global.css          # 设计系统
+│   └── content.config.ts          # 内容集合 schema
+├── astro.config.mjs
+└── package.json
+```
+
+## 常用命令
+
+| 命令 | 作用 |
+| --- | --- |
+| `bun run dev` | 启动开发服务器 |
+| `bun run build` | 构建到 `dist/` |
+| `bun run preview` | 本地预览构建结果 |
+| `bun run og` | 重新生成 `public/og.png` |
+| `bunx astro check` | 类型与内容检查 |
+
+<Steps>
+  <Step>
+    **改首页。** 编辑 `src/pages/index.astro`，文案和精选内容都在这里。
+  </Step>
+  <Step>
+    **写文章。** 在 `src/content/blog` 新建 `.mdx` 文件，保存后自动出现在列表。
+  </Step>
+  <Step>
+    **调样式。** 全局设计变量在 `src/styles/global.css` 顶部的 `:root` 里。
+  </Step>
+</Steps>
+
+## 第一篇文章
+
+新建 `src/content/blog/my-first-post.mdx`：
+
+```mdx
+---
+title: 我的第一篇文章
+description: 一句话说明这篇写什么。
+pubDate: 2026-11-06
+tags: [随笔]
+---
+
+从这里开始写正文。
+```
+
+保存后访问 `/blog`，文章会自动出现。构建时会校验 frontmatter，字段缺失会直接报错。
+
+## 下一步
+
+- [写作与内容约定](/docs/writing)
+- [配置 Giscus 评论](/docs/comments)
+- [用 Bun 部署到 GitHub Pages](/docs/deploy)

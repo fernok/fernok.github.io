@@ -1,0 +1,27 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const items = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+{items.length > 0 && (
+  <aside class="toc" data-toc aria-label="本页目录">
+    <div class="toc__title">On this page</div>
+    <ul>
+      {items.map((heading) => (
+        <li data-depth={heading.depth}>
+          <a href={`#${heading.slug}`}>{heading.text}</a>
+        </li>
+      ))}
+    </ul>
+    <a class="toc__back" href="#top">↑ 回到顶部</a>
+  </aside>
+)}

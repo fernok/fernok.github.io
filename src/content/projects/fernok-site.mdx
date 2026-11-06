@@ -1,0 +1,62 @@
+---
+title: fernok.github.io
+tagline: 一个把内容放在第一位的个人站点
+description: 用 Astro 7、Bun 和 Giscus 搭建的博客 / 文档 / 项目三合一站点，视觉参考 NVIDIA Build。
+status: shipped
+year: "2026"
+stack: [Astro, TypeScript, Bun, Giscus]
+repo: https://github.com/fernok/fernok.github.io
+demo: https://fernok.github.io
+featured: true
+order: 2
+accent: green
+---
+
+import Callout from '../../components/Callout.astro';
+
+这是你现在看到的站点。它同时承担三个角色：博客、文档和项目橱窗。
+
+## 为什么不是现成的主题
+
+试过几个 Astro 博客主题，但很快发现两个问题：一是首页几乎都为「文章列表」设计，项目只能塞进一个不起眼的链接；二是我想要的那种工业感、深色、信息密度高的视觉，需要改的地方比从头写还多。
+
+于是决定自己搭。设计参考 [NVIDIA Build](https://build.nvidia.com/models) 的模型目录：深色背景、细边框卡片、单一绿色强调、等宽字体标签。
+
+## 三块内容，一套系统
+
+- **博客**：按标签筛选，首篇突出显示，文章页带目录和 Giscus 评论；
+- **文档**：左侧分组导航，右侧页内目录，支持上一篇 / 下一篇；
+- **项目**：按状态筛选，详情页包含技术栈、仓库链接和讨论区。
+
+三者共用同一套内容集合、卡片组件和设计变量，但布局各自独立。内容存在 `src/content`，新增条目不需要改路由。
+
+## 性能策略
+
+1. 默认零客户端 JavaScript，只有搜索、筛选、复制和评论按需加载；
+2. Giscus 在滚动到评论区附近时才注入；
+3. 字体使用可变字体子集，中文回退系统字体；
+4. 所有页面构建为静态 HTML，由 GitHub Pages 直接提供；
+5. 图片资源极少，分享图在构建前生成。
+
+## 构建与部署
+
+```bash
+bun install
+bun run dev
+bun run build
+```
+
+推到 `main` 后，GitHub Actions 使用 Bun 安装依赖、构建，并通过 `upload-pages-artifact` 发布。完整流程见 [部署文档](/docs/deploy)。
+
+<Callout type="note" title="可以复刻">
+  这个站点的源码是公开的。如果你想拿来改造成自己的站点，直接 Fork，然后替换 `src/config.ts` 里的个人信息和 Giscus 配置即可。
+</Callout>
+
+## 接下来
+
+- 给文档加全文搜索；
+- 支持文章系列页；
+- 增加英文内容与语言切换；
+- 把设计系统整理成可复用的包。
+
+如果你对某一部分感兴趣，欢迎在下面留言，或者直接读源码。
